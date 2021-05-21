@@ -1,0 +1,23 @@
+<html>
+	<head>
+	{% if title %}
+		<title>{{title}} | EMTY PRJCT</title>
+	{% else %}
+		<title>EMPTY PRJCT</title>
+	{% endif %}
+	</head>
+	<body>
+		<nav>
+			<div><a href='/'>HOME</a></div>
+		</nav>
+		<hr>
+		{% with messages = get_flashed_messages() %}
+			<ul>
+				{% for message in messages %}
+					<li>{{message}}</li>
+				{% endfor %}
+			</ul>
+		{% endwith %}
+		{% block content %}{% endblock%}
+	</body>
+</html>

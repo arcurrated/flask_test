@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Hello, {{user.name}}</h1>
+<div class='container'>
+{% for el in data %}
+	<div class='card' title="{{el.id}}">
+		<h3>{{el.fio}}</h3>
+		<p>{{el.unit}}</p>
+	</div>
+{% endfor %}
+</div>
+{% endblock %}
