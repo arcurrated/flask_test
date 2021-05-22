@@ -9,12 +9,15 @@
 	<body>
 		<nav>
 			<div><a href='/'>HOME</a></div>
+			{% if g.user.is_authenticated %}
+			| <a href="{{url_for('logout')}}">LOGOUT</a>
+			{% endif %}
 		</nav>
 		<hr>
 		{% with messages = get_flashed_messages() %}
 			<ul>
 				{% for message in messages %}
-					<li>{{message}}</li>
+					<li style='color: red'>{{message}}</li>
 				{% endfor %}
 			</ul>
 		{% endwith %}
