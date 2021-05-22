@@ -1,4 +1,5 @@
 from app import db, lm
+from hashlib import md5
 
 #db role constants
 ROLE_USER = 0
@@ -15,6 +16,8 @@ class User(db.Model):
 	password = db.Column(db.String(64))
 	role = db.Column(db.SmallInteger, default=ROLE_USER)
 	posts = db.relationship('Post', backref='author', lazy='dynamic')
+	about_me = db.Column(db.String(140))
+	last_seen = db.Column(db.DateTime)
 
 	def is_authenticated(self):
 		return True
@@ -27,6 +30,9 @@ class User(db.Model):
 
 	def get_id(self):
 		return str(self.id)
+
+	def get_avatar(self, size):
+		return 'http://www.gravatar.com/avatar/{}?d=mm&s={}'.format(md5(self.login.encode('utf-8')).hexdigest(), str(size))
 
 	def __repr__(self):
 		return '<User {} with login {}>'.format(self.name, self.login)
