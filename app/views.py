@@ -63,6 +63,9 @@ def register():
 		user = User(name=_name, login=_login, password=_password)
 		db.session.add(user)
 		db.session.commit()
+		user.follow(user)
+		db.session.add(user)
+		db.session.commit()
 		flash('Successfully registered, please log in')
 		return redirect(url_for('login'))
 	return render_template('register.html', title='Register', form=form)
@@ -77,6 +80,11 @@ def user_page(login):
 	posts = [{ 'author': user, 'body': 'Test post #1' },
         { 'author': user, 'body': 'Test post #2' }]
 	return render_template('user_page.html', user=user, posts=posts)
+
+@app.route('/logout')
+def logout():
+	logout_user()
+	return redirect(url_for('index'))
 
 @app.route('/edit', methods=['GET', 'POST'])
 @login_required
@@ -94,11 +102,43 @@ def edit():
 		form.about_me.data = g.user.about_me
 	return render_template('edit_profile.html', form=form)
 
-@app.route('/logout')
-def logout():
-	logout_user()
-	return redirect(url_for('index'))
+@app.route('/follow/<login>')
+@login_required
+def follow(login):
+	user = User.query.filter_by(login=login).first()
+	if user is None:
+		flash('User {} not found'.format(login))
+		return redirect(url_for('index'))
+	if user == g.user:
+		flash('U can\'t follow yourself')
+		return redirect(url_for(user_page, login=login))
+	u = g.user.follow(user)
+	if u is None:
+		flash('Cannot follow {}'.format(login))
+		return redirect(url_for('user_page', login=login))
+	db.session.add(u)
+	db.session.commit()
+	flash('You are now following {}'.format(login))
+	return redirect(url_for('user_page', login=login))
 
+@app.route('/unfollow/<login>')
+@login_required
+def unfollow(login):
+	user = User.query.filter_by(login=login).first()
+	if user is None:
+		flash('User {} not found'.format(login))
+		return redirect(url_for('index'))
+	if user == g.user:
+		flash('U can\'t unfollow yourself')
+		return redirect(url_for('user_page', login=login))
+	u = g.user.unfollow(user)
+	if u is None:
+		flash('Cannot unfollow {}'.format(login))
+		return redirect(url_for('user_page', login=login))
+	db.session.add(u)
+	db.session.commit()
+	flash('U were successfully unfollowed from {}'.format(login))
+	return redirect(url_for('user_page', login=login))
 
 # errors
 @app.errorhandler(404)
