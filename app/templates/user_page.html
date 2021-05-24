@@ -19,8 +19,17 @@
 </div>
 <hr>
 <div class="container">
-	{% for post in posts %}
+	{% for post in posts.items %}
 		{% include 'post.html' %}
 	{% endfor %}
+<p>
+	{% if posts.has_prev %}
+		<a href='{{ url_for("user_page", login=user.login, page=posts.prev_num) }}'><< Newer</a>
+	{% endif %}
+	{% if posts.has_prev and posts.has_next %}|{% endif %}
+	{% if posts.has_next %}
+		<a href='{{ url_for("user_page", login=user.login, page=posts.next_num) }}'>Elder >></a>
+	{% endif %}
+</p>
 </div>
 {% endblock %}

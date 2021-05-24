@@ -2,11 +2,26 @@
 {% block content %}
 <h1>Hello, {{user.name}}</h1>
 <div class='container'>
-{% for el in data %}
-	<div class='card' title="{{el.id}}">
-		<h3>{{el.fio}}</h3>
-		<p>{{el.unit}}</p>
-	</div>
+	<form method='post' name='post'>
+		{{ form.hidden_tag() }}
+		<p class='text-muted'>Whasup?</p>
+		{{ form.post(size=30, maxlength=140) }}
+		{% for error in form.errors.post %}
+			<p class="text-error">{{ error }}</p>
+		{% endfor %}
+		<input type='submit' value='POST'>
+	</form>
+{% for post in posts.items %}
+	{% include 'post.html' %}
 {% endfor %}
+<p>
+	{% if posts.has_prev %}
+		<a href='{{ url_for("index", page=posts.prev_num) }}'><< Newer</a>
+	{% endif %}
+	{% if posts.has_prev and posts.has_next %}|{% endif %}
+	{% if posts.has_next %}
+		<a href='{{ url_for("index", page=posts.next_num) }}'>Elder >></a>
+	{% endif %}
+</p>
 </div>
 {% endblock %}

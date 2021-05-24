@@ -16,3 +16,5 @@ MAIL_PASSWORD = None
 
 #admins list
 ADMINS = ['admin@email.ru']
+
+POSTS_PER_PAGE = 3

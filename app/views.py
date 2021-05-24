@@ -1,9 +1,10 @@
 from app import app, db, lm
 from flask import render_template, flash, redirect, session, url_for, request, g
 from flask_login import login_user, logout_user, current_user, login_required
-from app.forms import LoginForm, RegisterForm, EditProfileForm
-from app.models import User, ROLE_USER, ROLE_ADMIN
+from app.forms import LoginForm, RegisterForm, EditProfileForm, PostForm
+from app.models import User, ROLE_USER, ROLE_ADMIN, Post
 from datetime import datetime
+from config import POSTS_PER_PAGE
 
 @app.before_request
 def before_request():
@@ -13,25 +14,22 @@ def before_request():
 		db.session.add(g.user)
 		db.session.commit()
 
-@app.route('/')
-@app.route('/index')
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/index', methods=['GET', 'POST'])
+@app.route('/index/<int:page>', methods=['GET', 'POST'])
 @login_required
-def index():
+def index(page=1):
 	user = g.user
-	data = [
-		{
-			'id': 13,
-			'unit': '1 AVTR',
-			'fio' : 'Bashir',
-		}, 
-		{
-			'id': 14,
-			'unit': '2 AVTR',
-			'fio': 'Restey',
-		}
-	]
-	# return
-	return render_template("index.html", title='Home', user=user, data=data)
+	form = PostForm()
+	if form.validate_on_submit():
+		post = Post(body=form.post.data, timestamp = datetime.utcnow(), author=g.user)
+		db.session.add(post)
+		db.session.commit()
+		flash('Post done')
+		return redirect(url_for('index'))
+
+	posts = user.followed_posts().paginate(page, POSTS_PER_PAGE, False)
+	return render_template("index.html", title='Home', user=user, posts=posts, form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -71,14 +69,14 @@ def register():
 	return render_template('register.html', title='Register', form=form)
 
 @app.route('/user/<login>')
+@app.route('/user/<login>/<int:page>')
 @login_required
-def user_page(login):
+def user_page(login, page=1):
 	user = User.query.filter_by(login=login).first()
 	if user is None:
 		flash('User {} not found'.format(login))
 		return redirect(url_for('index'))
-	posts = [{ 'author': user, 'body': 'Test post #1' },
-        { 'author': user, 'body': 'Test post #2' }]
+	posts = user.posts.order_by(Post.timestamp.desc()).paginate(page, POSTS_PER_PAGE, False)
 	return render_template('user_page.html', user=user, posts=posts)
 
 @app.route('/logout')

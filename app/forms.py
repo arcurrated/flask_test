@@ -21,3 +21,6 @@ class RegisterForm(FlaskForm):
 class EditProfileForm(FlaskForm):
 	name = TextField('name', validators=[Required()])
 	about_me = TextAreaField('about_me', validators=[Length(min=0, max=140)])
+
+class PostForm(FlaskForm):
+	post = TextField('post', validators=[Required()])
